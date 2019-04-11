@@ -23,7 +23,7 @@ module Apartment
     #   See the above middleware/console declarations below to help with this.  Hope to fix that soon.
     #
     config.to_prepare do
-      Apartment::Database.init
+      Apartment::Database.init unless ARGV.include? 'assets:precompile'
     end
 
     #
