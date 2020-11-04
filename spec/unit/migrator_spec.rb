@@ -18,7 +18,7 @@ describe Apartment::Migrator do
     end
 
     Apartment::Database.create schema_name    # create the schema
-    migrations_path = Rails.root + ActiveRecord::Migrator.migrations_path     # tell AR where the real migrations are
+    migrations_path = Rails.root + ActiveRecord::Migrator.migrations_paths     # tell AR where the real migrations are
     ActiveRecord::Migrator.stub(:migrations_path).and_return(migrations_path)
   end
 
