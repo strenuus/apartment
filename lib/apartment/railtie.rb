@@ -37,11 +37,11 @@ module Apartment
     #   The following initializers are a workaround to the fact that I can't properly hook into the rails reloader
     #   Note this is technically valid for any environment where cache_classes is false, for us, it's just development
     #
-    if Rails.env.development?
+    if Rails.env.development? or Rails.env.development_caching?
 
       # Apartment::Reloader is middleware to initialize things properly on each request to dev
       initializer 'apartment.init' do |app|
-        app.config.middleware.use "Apartment::Reloader"
+        app.config.middleware.use Apartment::Reloader
       end
 
       # Overrides reload! to also call Apartment::Database.init as well so that the reloaded classes have the proper table_names
