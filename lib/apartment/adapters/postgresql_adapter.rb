@@ -14,24 +14,20 @@ module Apartment
     # Default adapter when not using Postgresql Schemas
     class PostgresqlAdapter < AbstractAdapter
 
-    protected
+    private
 
-      #   Connect to new database
-      #   Abstract adapter will catch generic ActiveRecord error
-      #   Catch specific adapter errors here
-      #
-      #   @param {String} database Database name
-      #
-      def connect_to_new(database)
-        super
-      rescue PGError
-        raise DatabaseNotFound, "Cannot find database #{environmentify(database)}"
+      def rescue_from
+        PG::Error
       end
-
     end
 
     # Separate Adapter for Postgresql when using schemas
     class PostgresqlSchemaAdapter < AbstractAdapter
+
+      def initialize(config)
+        super
+        reset
+      end
 
       #   Drop the database schema
       #
