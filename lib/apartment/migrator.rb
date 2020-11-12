@@ -38,12 +38,11 @@ module Apartment
         end
       end
     end
+
+    private
+
+    def activerecord_below_5_2?
+      ActiveRecord.version.release < Gem::Version.new('5.2.0')
+    end
   end
-
-  private
-
-  def activerecord_below_5_2?
-    ActiveRecord.version.release < Gem::Version.new('5.2.0')
-  end
-
 end
