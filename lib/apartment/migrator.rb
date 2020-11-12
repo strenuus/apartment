@@ -7,21 +7,43 @@ module Apartment
     # Migrate to latest
     def migrate(database)
       Database.process(database) do
-        ActiveRecord::Migrator.migrate(ActiveRecord::Migrator.migrations_paths, ENV["VERSION"] ? ENV["VERSION"].to_i : nil) do |migration|
-          ENV["SCOPE"].blank? || (ENV["SCOPE"] == migration.scope)
+        version = ENV["VERSION"] ? ENV["VERSION"].to_i : nil
+
+        migration_scope_block = -> (migration) { ENV["SCOPE"].blank? || (ENV["SCOPE"] == migration.scope) }
+
+        if activerecord_below_5_2?
+          ActiveRecord::Migrator.migrate(ActiveRecord::Migrator.migrations_paths, version, &migration_scope_block)
+        else
+          ActiveRecord::Base.connection.migration_context.migrate(version, &migration_scope_block)
         end
       end
     end
 
     # Migrate up/down to a specific version
     def run(direction, database, version)
-      Database.process(database){ ActiveRecord::Migrator.run(direction, ActiveRecord::Migrator.migrations_paths, version) }
+      if activerecord_below_5_2?
+        ActiveRecord::Migrator.run(direction, ActiveRecord::Migrator.migrations_paths, version)
+      else
+        ActiveRecord::Base.connection.migration_context.run(direction, version)
+      end
     end
 
     # rollback latest migration `step` number of times
     def rollback(database, step = 1)
-      Database.process(database){ ActiveRecord::Migrator.rollback(ActiveRecord::Migrator.migrations_paths, step) }
+      Database.process(database) do
+        if activerecord_below_5_2?
+          ActiveRecord::Migrator.rollback(ActiveRecord::Migrator.migrations_paths, step)
+        else
+          ActiveRecord::Base.connection.migration_context.rollback(step)
+        end
+      end
     end
+  end
+
+  private
+
+  def activerecord_below_5_2?
+    ActiveRecord.version.release < Gem::Version.new('5.2.0')
   end
 
 end
